@@ -1,30 +1,42 @@
+# ============================================
+# STEP 1: Add this import at the TOP of the file
+# ============================================
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # ADD THIS LINE
+from fastapi.middleware.cors import CORSMiddleware  # ← ADD THIS LINE
 from pydantic import BaseModel
 from typing import Optional
 import os
 from openai import OpenAI
 
+# ============================================
 # Initialize FastAPI app
+# ============================================
 app = FastAPI(
     title="AI Essay Writer API",
     description="Multi-agent essay generation system",
     version="1.0.0"
 )
 
-# ADD CORS MIDDLEWARE - PUT THIS RIGHT AFTER app = FastAPI()
+# ============================================
+# STEP 2: Add CORS middleware RIGHT HERE (after app = FastAPI())
+# ============================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://ai-essay-generator-eight.vercel.app",
         "https://ai-essay-generator-61h71xddw-amulyakantamnenis-projects.vercel.app",
-        "https://*.vercel.app",  # Allow all Vercel preview deployments
-        "http://localhost:3000",  # For local development
-        "http://localhost:5173",  # For Vite local development
+        "https://*.vercel.app",  # All Vercel deployments
+        "http://localhost:3000",  # Next.js local dev
+        "http://localhost:5173",  # Vite local dev
     ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+# ============================================
+# Rest of your existing code below
+# ============================================
 
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -48,7 +60,7 @@ async def root():
         "message": "Backend status: Online",
         "title": "AI Essay Writer API · Amulya",
         "description": "Your multi-agent essay engine is running successfully.",
-        "frontend_url": "http://localhost:3000",
+        "frontend_url": "https://ai-essay-generator-eight.vercel.app",
         "endpoint": "POST /generate-essay"
     }
 
