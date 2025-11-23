@@ -11,7 +11,7 @@ export default function EssayWriter() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const API_URL = 'https://ai-essay-generator.onrender.com';
+  const API_URL = 'https://ai-essay-generator-2.onrender.com';
 
  const handleGenerate = async () => {
   if (!topic.trim()) {
