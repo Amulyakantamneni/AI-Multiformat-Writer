@@ -42,13 +42,13 @@ export default function EssayWriter() {
 
     const data = await response.json();
     setResult(data);
-  } catch (err: any) {
-    setError(err.message || 'Failed to generate essay. Please try again.');
-    console.error('Error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  } catch (err) {
+  const errorMessage = err instanceof Error ? err.message : 'Failed to generate essay. Please try again.';
+  setError(errorMessage);
+  console.error('Error:', err);
+} finally {
+  setLoading(false);
+}
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result.essay);
