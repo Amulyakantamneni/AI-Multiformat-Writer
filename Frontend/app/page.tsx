@@ -13,43 +13,42 @@ export default function EssayWriter() {
 
   const API_URL = 'https://ai-essay-generator.onrender.com';
 
-  const handleGenerate = async () => {
-    if (!topic.trim()) {
-      alert('Please enter a topic!');
-      return;
+ const handleGenerate = async () => {
+  if (!topic.trim()) {
+    alert('Please enter a topic!');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+  setResult(null);
+
+  try {
+    const response = await fetch(`${API_URL}/generate-essay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        topic: topic.trim(),
+        pdf: includePdf,
+        word_length: wordLength ? parseInt(wordLength) : null,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
     }
 
-    setLoading(true);
-    setError('');
-    setResult(null);
-
-    try {
-      const response = await fetch(`${API_URL}/generate-essay`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: topic.trim(),
-          pdf: includePdf,
-          word_length: wordLength ? parseInt(wordLength) : null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setResult(data);
-    } catch (err) {
-  const errorMessage = err instanceof Error ? err.message : 'Failed to generate essay. Please try again.';
-  setError(errorMessage);
-  console.error('Error:', err);
-} finally {
-      setLoading(false);
-    }
-  };
+    const data = await response.json();
+    setResult(data);
+  } catch (err: any) {
+    setError(err.message || 'Failed to generate essay. Please try again.');
+    console.error('Error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result.essay);
