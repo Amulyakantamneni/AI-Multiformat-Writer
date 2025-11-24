@@ -2,11 +2,22 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap', // 
+});
 
 export const metadata: Metadata = {
   title: 'AI Essay Writer - Amulya',
   description: 'AI-powered essay generation tool',
+  metadataBase: new URL('https://ai-essay-generator-eight.vercel.app'), // 
+  openGraph: {
+    title: 'AI Essay Writer - Amulya',
+    description: 'AI-powered essay generation tool',
+    url: '/',
+    siteName: 'AI Essay Writer',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
