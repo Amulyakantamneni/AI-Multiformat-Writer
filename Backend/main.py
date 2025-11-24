@@ -1,54 +1,40 @@
-# ============================================
-# STEP 1: Add this import at the TOP of the file
-# ============================================
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # ← ADD THIS LINE
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import os
 from openai import OpenAI
 
-# ============================================
-# Initialize FastAPI app
-# ============================================
 app = FastAPI(
     title="AI Essay Writer API",
     description="Multi-agent essay generation system",
     version="1.0.0"
 )
 
-# ============================================
-# STEP 2: Add CORS middleware RIGHT HERE (after app = FastAPI())
-# ============================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow all origins (relax later if you want)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ Defensive check for API key
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise RuntimeError("OPENAI_API_KEY is not set in environment.")
+client = OpenAI(api_key=api_key)
 
-# ============================================
-# Rest of your existing code below
-# ============================================
-
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Request model
 class EssayRequest(BaseModel):
     topic: str
-    length: Optional[str] = "medium"  # short, medium, long
-    tone: Optional[str] = "academic"  # academic, casual, persuasive
+    length: Optional[str] = "medium"
+    tone: Optional[str] = "academic"
 
-# Response model
 class EssayResponse(BaseModel):
     essay: str
     word_count: int
     sources: list
 
-# Root endpoint
 @app.get("/")
 async def root():
     return {
@@ -59,66 +45,47 @@ async def root():
         "endpoint": "POST /generate-essay"
     }
 
-# Health check
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "api": "operational"}
 
-# Essay generation endpoint
 @app.post("/generate-essay", response_model=EssayResponse)
 async def generate_essay(request: EssayRequest):
     try:
-        # Agent 1: Research Agent (simulated)
-        research_prompt = f"Research key points about: {request.topic}"
-        
-        # Agent 2: Outline Agent
-        outline_prompt = f"Create an outline for an essay about {request.topic} with {request.length} length"
-        
-        # Agent 3: Writing Agent
         writing_prompt = f"""
         Write a {request.length} {request.tone} essay about {request.topic}.
-        
+
         Requirements:
         - Clear introduction with thesis statement
         - Well-structured body paragraphs
         - Strong conclusion
         - Cite sources where applicable
-        
+
         Length guide:
         - short: 300-500 words
         - medium: 500-800 words  
         - long: 800-1200 words
         """
-        
-        # Call OpenAI API
-        response = client.chat.completions.create(
-    model="gpt-4.1-mini",
-    messages=[
-        {"role": "system", "content": "You are an expert essay writer and researcher."},
-        {"role": "user", "content": writing_prompt}
-    ],
-    temperature=0.7,
-    max_tokens=2000
-)
 
-        
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "You are an expert essay writer and researcher."},
+                {"role": "user", "content": writing_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=2000
+        )
+
         essay_text = response.choices[0].message.content
         word_count = len(essay_text.split())
-        
-        # Simulate sources (in production, extract from research)
-        sources = [
-            "Academic Journal Reference 1",
-            "Scholarly Article 2",
-            "Research Paper 3"
-        ]
-        
+        sources = ["Academic Journal Reference 1", "Scholarly Article 2", "Research Paper 3"]
+
         return EssayResponse(
             essay=essay_text,
             word_count=word_count,
             sources=sources
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Run with: uvicorn pdf_essay_generator:app --reload --host 0.0.0.0 --port 8000
