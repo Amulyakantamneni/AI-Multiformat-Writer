@@ -32,7 +32,7 @@ export default function EssayGenerator() {
       const response = await fetch(`${API_URL}/generate-essay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, length, tone })
+        body: JSON.stringify({ topic, length, tone }),
       });
 
       if (!response.ok) {
@@ -47,7 +47,9 @@ export default function EssayGenerator() {
     } catch (err) {
       console.error('Error:', err);
       setError(
-        `Failed to generate essay. ${err instanceof Error ? err.message : 'Unknown error'}`
+        `Failed to generate essay. ${
+          err instanceof Error ? err.message : 'Unknown error'
+        }`,
       );
     } finally {
       setLoading(false);
@@ -99,9 +101,7 @@ export default function EssayGenerator() {
 
               {/* Topic Input */}
               <div className="space-y-2 mb-6">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Essay Topic
-                </label>
+                <label className="block text-sm font-semibold text-gray-700">Essay Topic</label>
                 <textarea
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
@@ -120,7 +120,7 @@ export default function EssayGenerator() {
                   {[
                     { value: 'short', label: 'Short', words: '300-500 words' },
                     { value: 'medium', label: 'Medium', words: '500-800 words' },
-                    { value: 'long', label: 'Long', words: '800-1200 words' }
+                    { value: 'long', label: 'Long', words: '800-1200 words' },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -147,7 +147,7 @@ export default function EssayGenerator() {
                   {[
                     { value: 'academic', label: 'Academic', icon: '🎓' },
                     { value: 'casual', label: 'Casual', icon: '💬' },
-                    { value: 'persuasive', label: 'Persuasive', icon: '✨' }
+                    { value: 'persuasive', label: 'Persuasive', icon: '✨' },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -288,7 +288,17 @@ export default function EssayGenerator() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center text-sm text-gray-500">
           <p>Powered by OpenAI GPT-4 • Multi-Agent Workflow</p>
-          <p className="mt-2">Backend: <a href={API_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">{API_URL}</a></p>
+          <p className="mt-2">
+            Backend:{' '}
+            <a
+              href={API_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:underline"
+            >
+              {API_URL}
+            </a>
+          </p>
         </div>
       </div>
     </div>
