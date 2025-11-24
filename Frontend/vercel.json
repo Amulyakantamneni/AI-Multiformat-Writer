@@ -1,12 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "next.config.js",
-      "use": "@vercel/next"
-    }
+  "version": 3,
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://ai-essay-generator-2.onrender.com"
-  }
+  "outputDirectory": "out"
 }
