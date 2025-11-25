@@ -15,7 +15,7 @@ type WritingType =
 export default function AIWriter() {
   const [topic, setTopic] = useState('');
   const [length, setLength] = useState('medium');
-  const [tone, setTone] = useState('academic');
+  const [tone, setTone] = useState<'academic/formal' | 'casual/humanized'>('academic/formal');
   const [writingType, setWritingType] = useState<WritingType>('essay');
   const [content, setContent] = useState('');
   const [wordCount, setWordCount] = useState(0);
@@ -72,7 +72,7 @@ export default function AIWriter() {
       const response = await fetch(`${API_URL}/generate-essay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // NOTE: backend expects: topic, length, tone, writing_type
+        // Backend expects: topic, length, tone, writing_type
         body: JSON.stringify({
           topic,
           length,
@@ -253,7 +253,7 @@ export default function AIWriter() {
             <label className="block text-sm font-semibold text-gray-700">Topic</label>
             <textarea
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
+              onChange={(e) => setTopic(e.target value)}
               placeholder="Enter your topic (e.g., Climate Change, AI in Education, Financial Audits, etc.)"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
               rows={4}
@@ -319,16 +319,23 @@ export default function AIWriter() {
             </div>
           </div>
 
-          {/* Tone Selection */}
+          {/* Tone Selection – ONLY 2 OPTIONS */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Tone
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { value: 'academic', label: 'Academic', icon: '🎓' },
-                { value: 'casual', label: 'Casual', icon: '💬' },
-                { value: 'persuasive', label: 'Persuasive', icon: '✨' },
+                {
+                  value: 'academic/formal' as const,
+                  label: 'Academic / Formal',
+                  icon: '🎓',
+                },
+                {
+                  value: 'casual/humanized' as const,
+                  label: 'Casual / Humanized',
+                  icon: '💬',
+                },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -435,7 +442,8 @@ export default function AIWriter() {
 
               <div className="mb-4 p-3 bg-blue-50 rounded-lg">
                 <div className="text-sm text-blue-700 font-semibold">
-                  Word Count: {wordCount} words • Type: {writingTypeLabel(writingType)}
+                  Word Count: {wordCount} words • Type: {writingTypeLabel(writingType)} • Tone:{' '}
+                  {tone}
                 </div>
               </div>
 
