@@ -3,10 +3,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Loader2, Download, Copy, CheckCircle, AlertCircle } from 'lucide-react';
 
-export default function EssayGenerator() {
+type WritingType =
+  | 'essay'
+  | 'report'
+  | 'summary'
+  | 'explanation'
+  | 'audit'
+  | 'article'
+  | 'social_post';
+
+export default function AIWriter() {
   const [topic, setTopic] = useState('');
   const [length, setLength] = useState('medium');
   const [tone, setTone] = useState('academic');
+  const [writingType, setWritingType] = useState<WritingType>('essay');
   const [essay, setEssay] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [sources, setSources] = useState<string[]>([]);
@@ -15,7 +25,29 @@ export default function EssayGenerator() {
   const [copied, setCopied] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai-essay-generator-2.onrender.com';
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'https://ai-essay-generator-2.onrender.com';
+
+  const writingTypeLabel = (type: WritingType) => {
+    switch (type) {
+      case 'essay':
+        return 'Essay';
+      case 'report':
+        return 'Report';
+      case 'summary':
+        return 'Summary';
+      case 'explanation':
+        return 'Explanation';
+      case 'audit':
+        return 'Audit';
+      case 'article':
+        return 'Article';
+      case 'social_post':
+        return 'Social Post';
+      default:
+        return 'Writing';
+    }
+  };
 
   // Scroll to output when essay is generated
   useEffect(() => {
@@ -40,7 +72,7 @@ export default function EssayGenerator() {
       const response = await fetch(`${API_URL}/generate-essay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, length, tone })
+        body: JSON.stringify({ topic, length, tone, writing_type: writingType }),
       });
 
       if (!response.ok) {
@@ -55,7 +87,9 @@ export default function EssayGenerator() {
     } catch (err) {
       console.error('Error:', err);
       setError(
-        `Failed to generate essay. ${err instanceof Error ? err.message : 'Unknown error'}`
+        `Failed to generate writing. ${
+          err instanceof Error ? err.message : 'Unknown error'
+        }`,
       );
     } finally {
       setLoading(false);
@@ -69,15 +103,16 @@ export default function EssayGenerator() {
   };
 
   const downloadAsPDF = () => {
-    // Create a printable HTML document
     const printWindow = window.open('', '', 'width=800,height=600');
     if (!printWindow) return;
+
+    const titleText = `${writingTypeLabel(writingType)} - ${topic || 'AI Writer Document'}`;
 
     const htmlContent = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Essay - ${topic}</title>
+        <title>${titleText}</title>
         <style>
           body {
             font-family: 'Georgia', serif;
@@ -127,29 +162,33 @@ export default function EssayGenerator() {
         </style>
       </head>
       <body>
-        <h1>${topic}</h1>
+        <h1>${titleText}</h1>
         <div class="meta">
           <strong>Word Count:</strong> ${wordCount} words | 
           <strong>Length:</strong> ${length} | 
-          <strong>Tone:</strong> ${tone}
+          <strong>Tone:</strong> ${tone} |
+          <strong>Type:</strong> ${writingTypeLabel(writingType)}
         </div>
         <div class="essay-content">${essay}</div>
-        ${sources.length > 0 ? `
+        ${
+          sources.length > 0
+            ? `
           <div class="sources">
             <h2>Sources</h2>
             <ul>
-              ${sources.map(source => `<li>${source}</li>`).join('')}
+              ${sources.map((source) => `<li>${source}</li>`).join('')}
             </ul>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </body>
       </html>
     `;
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    
-    // Wait for content to load then trigger print
+
     printWindow.onload = () => {
       printWindow.print();
       printWindow.onafterprint = () => printWindow.close();
@@ -157,10 +196,11 @@ export default function EssayGenerator() {
   };
 
   const downloadAsText = () => {
+    const titlePrefix = writingTypeLabel(writingType).toLowerCase().replace(' ', '-');
     const file = new Blob([essay], { type: 'text/plain' });
     const element = document.createElement('a');
     element.href = URL.createObjectURL(file);
-    element.download = `essay-${topic.substring(0, 20)}.txt`;
+    element.download = `${titlePrefix}-${topic.substring(0, 20) || 'ai-writer'}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -177,9 +217,11 @@ export default function EssayGenerator() {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
-                AI Essay Writer
+                AI Writer
               </h1>
-              <p className="text-sm text-gray-600">Professional Essay Generation Tool</p>
+              <p className="text-sm text-gray-600">
+                Multi-format AI writing assistant (Essay, Report, Summary, Article & more)
+              </p>
             </div>
           </div>
         </div>
@@ -189,32 +231,66 @@ export default function EssayGenerator() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Input Section - Centered */}
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Generate Your Essay</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            Generate Your Writing
+          </h2>
 
           {/* Topic Input */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-semibold text-gray-700">
-              Essay Topic
+              Topic
             </label>
             <textarea
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Enter your essay topic (e.g., Climate Change, Artificial Intelligence, World War II)"
+              placeholder="Enter your topic (e.g., Climate Change, AI in Education, Financial Audits, etc.)"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
               rows={4}
             />
           </div>
 
+          {/* Writing Type Selection */}
+          <div className="space-y-2 mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Writing Type
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {(
+                [
+                  'essay',
+                  'report',
+                  'summary',
+                  'explanation',
+                  'audit',
+                  'article',
+                  'social_post',
+                ] as WritingType[]
+              ).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setWritingType(type)}
+                  className={`p-3 rounded-xl border-2 text-sm transition-all ${
+                    writingType === type
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  {writingTypeLabel(type)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Length Selection */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Essay Length
+              Length
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { value: 'short', label: 'Short', words: '300-500 words' },
-                { value: 'medium', label: 'Medium', words: '500-800 words' },
-                { value: 'long', label: 'Long', words: '800-1200 words' }
+                { value: 'short', label: 'Short', words: '150-300 words' },
+                { value: 'medium', label: 'Medium', words: '400-700 words' },
+                { value: 'long', label: 'Long', words: '800-1200 words' },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -235,13 +311,13 @@ export default function EssayGenerator() {
           {/* Tone Selection */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Writing Tone
+              Tone
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { value: 'academic', label: 'Academic', icon: '🎓' },
                 { value: 'casual', label: 'Casual', icon: '💬' },
-                { value: 'persuasive', label: 'Persuasive', icon: '✨' }
+                { value: 'persuasive', label: 'Persuasive', icon: '✨' },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -276,12 +352,12 @@ export default function EssayGenerator() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Generating Essay...
+                Generating...
               </>
             ) : (
               <>
                 <FileText className="w-5 h-5" />
-                Generate Essay
+                Generate Writing
               </>
             )}
           </button>
@@ -292,24 +368,28 @@ export default function EssayGenerator() {
           <div className="bg-white rounded-xl shadow-md border border-blue-100 p-6">
             <div className="text-3xl mb-2">⚡</div>
             <div className="font-semibold text-gray-900">Fast Generation</div>
-            <div className="text-sm text-gray-600 mt-1">Essays in seconds</div>
+            <div className="text-sm text-gray-600 mt-1">Content in seconds</div>
           </div>
           <div className="bg-white rounded-xl shadow-md border border-blue-100 p-6">
             <div className="text-3xl mb-2">🎯</div>
-            <div className="font-semibold text-gray-900">AI-Powered</div>
-            <div className="text-sm text-gray-600 mt-1">GPT-4 technology</div>
+            <div className="font-semibold text-gray-900">Multi-Format AI</div>
+            <div className="text-sm text-gray-600 mt-1">
+              Essays, reports, summaries, posts & more
+            </div>
           </div>
         </div>
 
-        {/* Output Section - Appears below after generation */}
+        {/* Output Section */}
         {essay && (
           <div ref={outputRef} className="space-y-6 scroll-mt-8">
-            {/* Essay Output */}
+            {/* Output */}
             <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-6 h-6 text-green-500" />
-                  <h2 className="text-2xl font-bold text-gray-900">Your Essay</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Your {writingTypeLabel(writingType)}
+                  </h2>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -344,7 +424,7 @@ export default function EssayGenerator() {
 
               <div className="mb-4 p-3 bg-blue-50 rounded-lg">
                 <div className="text-sm text-blue-700 font-semibold">
-                  Word Count: {wordCount} words
+                  Word Count: {wordCount} words • Type: {writingTypeLabel(writingType)}
                 </div>
               </div>
 
@@ -376,8 +456,18 @@ export default function EssayGenerator() {
       {/* Footer */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center text-sm text-gray-500">
-          <p>Powered by OpenAI GPT-4 • Multi-Agent Workflow</p>
-          <p className="mt-2">Backend: <a href={API_URL} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{API_URL}</a></p>
+          <p>Powered by OpenAI GPT-4 • Multi-format AI Writing Engine</p>
+          <p className="mt-2">
+            Backend:{' '}
+            <a
+              href={API_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              {API_URL}
+            </a>
+          </p>
         </div>
       </div>
     </div>
