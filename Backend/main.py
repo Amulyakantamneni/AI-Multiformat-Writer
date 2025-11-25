@@ -55,7 +55,7 @@ export default function AIWriter() {
           topic,
           length,
           tone,
-          writing_type: writingType, // 🔥 important: send type to backend
+          writing_type: writingType, 
         }),
       });
 
