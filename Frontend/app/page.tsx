@@ -521,7 +521,7 @@ export default function AIWritingStudio() {
             {/* Footer note */}
             <div className="mt-3 flex items-center justify-between text-[0.68rem] text-slate-400">
               <span>
-                Your Ideas, Enhanced by Intelligent Writing Systems. For Students, Professionals & Creators
+                Your Ideas, Enhanced by Intelligent Writing Systems\nFor Students, Professionals & Creators
               </span>
               <span>Model: OpenAI · gpt-4o-mini</span>
             </div>
