@@ -6,9 +6,9 @@ import os
 from openai import OpenAI
 
 app = FastAPI(
-    title="AI Writing Studio API",
+    title="AI Writing Agent",
     description="Multi-purpose content generation API",
-    version="2.0.0"
+    version="2.0.1"
 )
 
 # CORS Configuration
@@ -23,10 +23,22 @@ app.add_middleware(
 # Initialize OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# ---- GLOBAL FORMAT RULE (no asterisks) ----
+FORMAT_RULES = (
+    "VERY IMPORTANT: Do not use the '*' (asterisk) character anywhere in the output. "
+    "Do not use Markdown like **bold** or *italic*. "
+    "If you want headings, use plain text (e.g., INTRODUCTION:, EXECUTIVE SUMMARY:)."
+)
+
 # System prompts for each tool
 PROMPTS = {
     "essay": {
-        "system": "You are an expert academic essay writer. Write well-structured essays with clear introductions, body paragraphs, and conclusions. Use formal academic language and proper citations.",
+        "system": (
+            "You are an expert academic essay writer. "
+            "Write well-structured essays with clear introductions, body paragraphs, and conclusions. "
+            "Use formal academic language and proper citations. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "short": "300-500 words",
             "medium": "500-800 words",
@@ -34,7 +46,12 @@ PROMPTS = {
         }
     },
     "report": {
-        "system": "You are a professional business report writer. Create detailed reports with executive summaries, findings, analysis, and recommendations. Use formal business language.",
+        "system": (
+            "You are a professional business report writer. "
+            "Create detailed reports with executive summaries, findings, analysis, and recommendations. "
+            "Use formal business language. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "brief": "400-600 words",
             "standard": "700-1000 words",
@@ -42,7 +59,12 @@ PROMPTS = {
         }
     },
     "article": {
-        "system": "You are an engaging article and blog post writer. Write compelling, SEO-friendly content with catchy headlines and clear structure. Make it readable and informative.",
+        "system": (
+            "You are an engaging article and blog post writer. "
+            "Write compelling, SEO-friendly content with catchy headlines and clear structure. "
+            "Make it readable and informative. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "short": "400-600 words",
             "medium": "700-1000 words",
@@ -50,7 +72,11 @@ PROMPTS = {
         }
     },
     "summary": {
-        "system": "You are an expert at summarizing content. Extract key points and create concise summaries while maintaining the essential meaning.",
+        "system": (
+            "You are an expert at summarizing content. "
+            "Extract key points and create concise summaries while maintaining the essential meaning. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "bullet": "Bullet points with key takeaways",
             "paragraph": "2-3 paragraph summary",
@@ -58,7 +84,11 @@ PROMPTS = {
         }
     },
     "explanation": {
-        "system": "You are a skilled explainer who makes complex topics easy to understand. Use analogies, examples, and clear language.",
+        "system": (
+            "You are a skilled explainer who makes complex topics easy to understand. "
+            "Use analogies, examples, and clear language. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "simple": "Simple explanation (ELI5 style)",
             "moderate": "Moderate detail explanation",
@@ -66,7 +96,12 @@ PROMPTS = {
         }
     },
     "social": {
-        "system": "You are a social media content creator. Write engaging, concise posts optimized for social platforms. Use emojis, hashtags, and compelling hooks.",
+        "system": (
+            "You are a social media content creator. "
+            "Write engaging, concise posts optimized for social platforms. "
+            "Use emojis, hashtags, and compelling hooks. "
+            + FORMAT_RULES
+        ),
         "formats": {
             "tweet": "Twitter/X post (280 characters)",
             "post": "Standard social media post",
@@ -91,9 +126,9 @@ class ContentResponse(BaseModel):
 @app.get("/")
 async def root():
     return {
-        "message": "AI Writing Studio API",
+        "message": "AI Writing Agent",
         "status": "online",
-        "version": "2.0.0",
+        "version": "2.0.1",
         "available_tools": list(PROMPTS.keys())
     }
 
@@ -117,6 +152,8 @@ async def generate_content(request: ContentRequest):
             user_prompt = f"""Summarize the following text in a {request.tone} style.
 Format: {length_desc}
 
+{FORMAT_RULES}
+
 Text to summarize:
 {request.topic}"""
         else:
@@ -125,8 +162,9 @@ Text to summarize:
 Requirements:
 - Length: {length_desc}
 - Tone: {request.tone}
-- Format: {tool_config['formats'][request.length]}
+- Format: {tool_config['formats'].get(request.length, length_desc)}
 - Make it engaging, well-structured, and professional
+- {FORMAT_RULES}
 """
 
         # Call OpenAI API
@@ -140,11 +178,15 @@ Requirements:
             max_tokens=2000
         )
 
-        content = response.choices[0].message.content
-        word_count = len(content.split())
+        raw_content = response.choices[0].message.content or ""
+
+        # HARD RULE: remove any asterisks if the model still uses them
+        cleaned_content = raw_content.replace("*", "")
+
+        word_count = len(cleaned_content.split())
 
         return ContentResponse(
-            content=content,
+            content=cleaned_content,
             word_count=word_count,
             tool_used=request.tool
         )
