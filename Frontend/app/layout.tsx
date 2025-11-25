@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   description: 'Generate essays, reports, summaries, explanations, audits, articles, and social posts from a single topic.',
   metadataBase: new URL('https://ai-essay-generator-eight.vercel.app'), // 
   openGraph: {
-    title: 'AI Essay Writer - Amulya',
-    description: 'AI-powered essay generation tool',
+    title: 'AI Writing Agent',
+    description: 'AI-powered content generation tool',
     url: '/',
-    siteName: 'AI Essay Writer',
+    siteName: 'AI Writer',
     type: 'website',
   },
 };
