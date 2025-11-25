@@ -159,7 +159,11 @@ ________________________________________
 •	🗂️ Document upload → auto-analysis
 •	⛓️ LangChain or LlamaIndex pipeline
 •	🔍 Semantic search for sources
-•	🧵 Auto thread generation for Twitter
+•	🧵 Auto thread generation for Twitter![Screenshot 2025-11-25 125612](https://github.com/user-attachments/assets/c0ae8ce0-4cc3-4cb0-b3d3-2041317d6c6f)
+![Screenshot 2025-11-25 122124](https://github.com/user-attachments/assets/b9fb95f8-a910-43f2-88db-55aa9f27e44e)
+![Screenshot 2025-11-25 120941](https://github.com/user-attachments/assets/1e2d786b-acc3-43a3-8e4c-080f85f0f8e2)
+![Screenshot 2025-11-25 115236](https://github.com/user-attachments/assets/c44c0ec4-1aee-4a24-88d3-62b4186f7b5a)
+
 •	🔄 Rewrite, improve, humanize tools
 •	🧠 Personality-based writing agents
 
