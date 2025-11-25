@@ -12,7 +12,7 @@ This project showcases modern AI engineering practices including:
 
 ⭐ Live Demo
 
-👉 https://amulya-ai.vercel.app
+👉 [https://amulya-ai.vercel.app](https://ai-writer-agent.vercel.app/)
 
 Backend hosted on Render, frontend on Vercel.
 
